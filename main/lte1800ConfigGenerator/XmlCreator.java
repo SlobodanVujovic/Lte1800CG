@@ -240,21 +240,17 @@ public class XmlCreator {
 	}
 
 	public void editBtsscl_BtsId_BtsName(String eNodeBId, String siteCode, boolean isSharing) {
-		NodeList pNodeList = (NodeList) getNodeSetObjectFromXmlDocument("//cmData/managedObject[@class=\"BTSSCL\"]/p");
-		for (int i = 0; i < pNodeList.getLength(); i++) {
-			Node pNode = pNodeList.item(i);
-			String nameNodeValue = getAttributeValueFromNode(pNode, "name");
-			if (nameNodeValue.equals("btsId")) {
-				pNode.setTextContent(eNodeBId);
-			} else if (nameNodeValue.equals("btsName")) {
-				pNode.setTextContent(siteCode);
-			} else if (nameNodeValue.equals("rfSharingEnabled")) {
-				if (isSharing) {
-					pNode.setTextContent("true");
-				} else {
-					pNode.setTextContent("false");
-				}
-			}
+		Node pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"BTSSCL\"]/p[@name = \"btsId\"]");
+		pNode.setTextContent(eNodeBId);
+		pNode = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"BTSSCL\"]/p[@name = \"btsName\"]");
+		pNode.setTextContent(siteCode);
+		pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"BTSSCL\"]/p[@name = \"rfSharingEnabled\"]");
+		if (isSharing) {
+			pNode.setTextContent("true");
+		} else {
+			pNode.setTextContent("false");
 		}
 	}
 
@@ -349,34 +345,44 @@ public class XmlCreator {
 
 	public void editLncel_cellParameters(LteCell lteCell, String eNodeBId) {
 		// This is case when expression represent search for node with 2 specific attributes.
-		NodeList pList = (NodeList) getNodeSetObjectFromXmlDocument(
+		Node pNode = (Node) getNodeObjectFromXmlDocument(
 				"//cmData/managedObject[@class=\"LNCEL\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
-						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p");
-		for (int i = 0; i < pList.getLength(); i++) {
-			Node pNode = pList.item(i);
-			String nameNodeValue = getAttributeValueFromNode(pNode, "name");
-			if (nameNodeValue.equals("dlChBw")) {
-				pNode.setTextContent(lteCell.cellInfo.get("channelBw"));
-			} else if (nameNodeValue.equals("earfcnDL")) {
-				pNode.setTextContent(lteCell.cellInfo.get("dlEarfcn"));
-			} else if (nameNodeValue.equals("earfcnUL")) {
-				String dlEarfcn = lteCell.cellInfo.get("dlEarfcn");
-				int ulEarfcn = Integer.valueOf(dlEarfcn) + 18000;
-				pNode.setTextContent(String.valueOf(ulEarfcn));
-			} else if (nameNodeValue.equals("pMax")) {
-				pNode.setTextContent(lteCell.cellInfo.get("maxPower"));
-			} else if (nameNodeValue.equals("phyCellId")) {
-				pNode.setTextContent(lteCell.cellInfo.get("pci"));
-			} else if (nameNodeValue.equals("rootSeqIndex")) {
-				pNode.setTextContent(lteCell.cellInfo.get("rootSeqIndex"));
-			} else if (nameNodeValue.equals("tac")) {
-				pNode.setTextContent(lteCell.cellInfo.get("tac"));
-			} else if (nameNodeValue.equals("ulChBw")) {
-				pNode.setTextContent(lteCell.cellInfo.get("channelBw"));
-			} else if (nameNodeValue.equals("cellName")) {
-				pNode.setTextContent(lteCell.cellInfo.get("cellName"));
-			}
-		}
+						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p[@name=\"dlChBw\"]");
+		pNode.setTextContent(lteCell.cellInfo.get("channelBw"));
+		pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"LNCEL\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
+						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p[@name=\"earfcnDL\"]");
+		pNode.setTextContent(lteCell.cellInfo.get("dlEarfcn"));
+		pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"LNCEL\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
+						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p[@name=\"earfcnUL\"]");
+		String dlEarfcn = lteCell.cellInfo.get("dlEarfcn");
+		int ulEarfcn = Integer.valueOf(dlEarfcn) + 18000;
+		pNode.setTextContent(String.valueOf(ulEarfcn));
+		pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"LNCEL\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
+						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p[@name=\"pMax\"]");
+		pNode.setTextContent(lteCell.cellInfo.get("maxPower"));
+		pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"LNCEL\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
+						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p[@name=\"phyCellId\"]");
+		pNode.setTextContent(lteCell.cellInfo.get("pci"));
+		pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"LNCEL\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
+						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p[@name=\"rootSeqIndex\"]");
+		pNode.setTextContent(lteCell.cellInfo.get("rootSeqIndex"));
+		pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"LNCEL\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
+						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p[@name=\"tac\"]");
+		pNode.setTextContent(lteCell.cellInfo.get("tac"));
+		pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"LNCEL\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
+						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p[@name=\"ulChBw\"]");
+		pNode.setTextContent(lteCell.cellInfo.get("channelBw"));
+		pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"LNCEL\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
+						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p[@name=\"cellName\"]");
+		pNode.setTextContent(lteCell.cellInfo.get("cellName"));
 	}
 
 	public void editGnfl_BcchUnique(String eNodeBId, String lnCellId, Set<String> uniqueBcchOfNeighbours) {
@@ -412,17 +418,10 @@ public class XmlCreator {
 	public void editLnrelg_CellIdUniquePerCell(String eNodeBId, String lnCellId, String counter,
 			GsmNeighbour gsmNeighbour) {
 		Element managedObject = createLnrelgNode(eNodeBId, lnCellId, counter, gsmNeighbour);
-		NodeList managedObjectList = (NodeList) getNodeSetObjectFromXmlDocument(
+		Node referenceNode = (Node) getNodeObjectFromXmlDocument(
 				"//cmData/managedObject[@class=\"REDRT\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
 						+ "/LNCEL-" + lnCellId + "/REDRT-0\"]");
-		Node firstManagedObject = null;
-		for (int i = 0; i < managedObjectList.getLength(); i++) {
-			firstManagedObject = managedObjectList.item(i);
-			if (firstManagedObject.getNodeName().equals("managedObject")) {
-				break;
-			}
-		}
-		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+		referenceNode.getParentNode().insertBefore(managedObject, referenceNode);
 	}
 
 	private Element createLnrelgNode(String eNodeBId, String lnCellId, String counter, GsmNeighbour gsmNeighbour) {
@@ -490,10 +489,9 @@ public class XmlCreator {
 
 	public void editRmod_SiteName(String eNodeBId, String counter, String siteName, boolean isSharing) {
 		Element managedObject = createRmodNode(eNodeBId, counter, siteName, isSharing);
-		NodeList managedObjectList = (NodeList) getNodeSetObjectFromXmlDocument(
+		Node referenceNode = (Node) getNodeObjectFromXmlDocument(
 				"//cmData/managedObject[@class=\"SMOD\" and @distName=\"MRBTS-" + eNodeBId + "/SMOD-1\"]");
-		Node firstManagedObject = managedObjectList.item(0);
-		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+		referenceNode.getParentNode().insertBefore(managedObject, referenceNode);
 	}
 
 	private Element createRmodNode(String eNodeBId, String counter, String siteName, boolean isSharing) {
@@ -566,10 +564,9 @@ public class XmlCreator {
 
 	public void editGsmSmod_SiteName(String eNodeBId) {
 		Element managedObject = createGsmSmodeNode(eNodeBId);
-		NodeList managedObjectList = (NodeList) getNodeSetObjectFromXmlDocument(
+		Node referenceNode = (Node) getNodeObjectFromXmlDocument(
 				"//cmData/managedObject[@class=\"TRBLCADM\" and @distName=\"MRBTS-" + eNodeBId + "/TRBLCADM-1\"]");
-		Node firstManagedObject = managedObjectList.item(0);
-		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+		referenceNode.getParentNode().insertBefore(managedObject, referenceNode);
 	}
 
 	private Element createGsmSmodeNode(String eNodeBId) {
@@ -636,38 +633,31 @@ public class XmlCreator {
 	}
 
 	public void editFtm_SiteCode(String eNodeBId, String siteCode, String siteName) {
-		NodeList pNodeList = (NodeList) getNodeSetObjectFromXmlDocument(
-				"//cmData/managedObject[@class=\"FTM\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
-						+ "/FTM-1\"]/p");
-		for (int i = 0; i < pNodeList.getLength(); i++) {
-			Node pNode = pNodeList.item(i);
-			String nameNodeValue = getAttributeValueFromNode(pNode, "name");
-			if (nameNodeValue.equals("systemTitle")) {
-				pNode.setTextContent(siteCode);
-			} else if (nameNodeValue.equals("locationName")) {
-				pNode.setTextContent(siteName);
-			}
-		}
+		Node pNode = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"FTM\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1\"]/p[@name=\"systemTitle\"]");
+		pNode.setTextContent(siteCode);
+		pNode = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"FTM\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1\"]/p[@name=\"locationName\"]");
+		pNode.setTextContent(siteName);
 	}
 
 	public void editIpno(LteSite lteSite) {
 		String eNodeBId = lteSite.generalInfo.get("eNodeBId");
-		NodeList pList = (NodeList) getNodeSetObjectFromXmlDocument(
-				"//cmData/managedObject[@class=\"IPNO\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
-						+ "/FTM-1/IPNO-1\"]/p");
-		for (int i = 0; i < pList.getLength(); i++) {
-			Node childNode = pList.item(i);
-			String nameNodeValue = getAttributeValueFromNode(childNode, "name");
-			if (nameNodeValue.equals("mPlaneIpAddress")) {
-				childNode.setTextContent(lteSite.transmission.get("mIp"));
-			} else if (nameNodeValue.equals("uPlaneIpAddress") | nameNodeValue.equals("cPlaneIpAddress")) {
-				childNode.setTextContent(lteSite.transmission.get("cuDestIp"));
-			} else if (nameNodeValue.equals("sPlaneIpAddress")) {
-				childNode.setTextContent(lteSite.transmission.get("sIp"));
-			} else if (nameNodeValue.equals("btsId")) {
-				childNode.setTextContent(eNodeBId);
-			}
-		}
+		Node pList = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IPNO\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1\"]/p[@name=\"mPlaneIpAddress\"]");
+		pList.setTextContent(lteSite.transmission.get("mIp"));
+		pList = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IPNO\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1\"]/p[@name=\"uPlaneIpAddress\"]");
+		pList.setTextContent(lteSite.transmission.get("cuDestIp"));
+		pList = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IPNO\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1\"]/p[@name=\"cPlaneIpAddress\"]");
+		pList.setTextContent(lteSite.transmission.get("cuDestIp"));
+		pList = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IPNO\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1\"]/p[@name=\"sPlaneIpAddress\"]");
+		pList.setTextContent(lteSite.transmission.get("sIp"));
+		pList = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IPNO\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1\"]/p[@name=\"btsId\"]");
+		pList.setTextContent(eNodeBId);
 	}
 
 	public void editTwamp(String cuDestIp) {
@@ -717,38 +707,28 @@ public class XmlCreator {
 
 	public void editIvif1(LteSite lteSite) {
 		String eNodeBId = lteSite.generalInfo.get("eNodeBId");
-		NodeList pNodeList = (NodeList) getNodeSetObjectFromXmlDocument(
-				"//cmData/managedObject[@class=\"IVIF\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
-						+ "/FTM-1/IPNO-1/IEIF-1/IVIF-1\"]/p");
-		for (int i = 0; i < pNodeList.getLength(); i++) {
-			Node pNode = pNodeList.item(i);
-			String nameNodeValue = getAttributeValueFromNode(pNode, "name");
-			if (nameNodeValue.equals("vlanId")) {
-				pNode.setTextContent(lteSite.transmission.get("sVlanId"));
-			} else if (nameNodeValue.equals("localIpAddr")) {
-				pNode.setTextContent(lteSite.transmission.get("sIp"));
-			} else if (nameNodeValue.equals("netmask")) {
-				pNode.setTextContent(lteSite.transmission.get("sSubnet"));
-			}
-		}
+		Node pNode = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IVIF\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1/IEIF-1/IVIF-1\"]/p[@name=\"vlanId\"]");
+		pNode.setTextContent(lteSite.transmission.get("sVlanId"));
+		pNode = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IVIF\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1/IEIF-1/IVIF-1\"]/p[@name=\"localIpAddr\"]");
+		pNode.setTextContent(lteSite.transmission.get("sIp"));
+		pNode = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IVIF\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1/IEIF-1/IVIF-1\"]/p[@name=\"netmask\"]");
+		pNode.setTextContent(lteSite.transmission.get("sSubnet"));
 	}
 
 	public void editIvif2(LteSite lteSite) {
 		String eNodeBId = lteSite.generalInfo.get("eNodeBId");
-		NodeList pNodeList = (NodeList) getNodeSetObjectFromXmlDocument(
-				"//cmData/managedObject[@class=\"IVIF\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
-						+ "/FTM-1/IPNO-1/IEIF-1/IVIF-2\"]/p");
-		for (int i = 0; i < pNodeList.getLength(); i++) {
-			Node pNode = pNodeList.item(i);
-			String nameNodeValue = getAttributeValueFromNode(pNode, "name");
-			if (nameNodeValue.equals("vlanId")) {
-				pNode.setTextContent(lteSite.transmission.get("cuVlanId"));
-			} else if (nameNodeValue.equals("localIpAddr")) {
-				pNode.setTextContent(lteSite.transmission.get("cuDestIp"));
-			} else if (nameNodeValue.equals("netmask")) {
-				pNode.setTextContent(lteSite.transmission.get("cuSubnet"));
-			}
-		}
+		Node pNode = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IVIF\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1/IEIF-1/IVIF-2\"]/p[@name=\"vlanId\"]");
+		pNode.setTextContent(lteSite.transmission.get("cuVlanId"));
+		pNode = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IVIF\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1/IEIF-1/IVIF-2\"]/p[@name=\"localIpAddr\"]");
+		pNode.setTextContent(lteSite.transmission.get("cuDestIp"));
+		pNode = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"IVIF\" and @distName=\"MRBTS-"
+				+ eNodeBId + "/LNBTS-" + eNodeBId + "/FTM-1/IPNO-1/IEIF-1/IVIF-2\"]/p[@name=\"netmask\"]");
+		pNode.setTextContent(lteSite.transmission.get("cuSubnet"));
 	}
 
 	public void editTopf(String eNodeBId, String topIp) {
@@ -769,19 +749,10 @@ public class XmlCreator {
 			antPort[5] = "11";
 		}
 		NodeList itemList = (NodeList) getNodeSetObjectFromXmlDocument(
-				"//cmData/managedObject[@class=\"LCELL\"]/list/item");
+				"//cmData/managedObject[@class=\"LCELL\"]/list/item/p[@name=\"antlId\"]");
 		for (int i = 0; i < itemList.getLength(); i++) {
 			Node itemNode = itemList.item(i);
-			NodeList childNodeList = itemNode.getChildNodes();
-			for (int j = 0; j < childNodeList.getLength(); j++) {
-				Node childNode = childNodeList.item(j);
-				if (childNode.getNodeName().equals("p")) {
-					String pNameNodeValue = getAttributeValueFromNode(childNode, "name");
-					if (pNameNodeValue.equals("antlId")) {
-						childNode.setTextContent(antPort[i]);
-					}
-				}
-			}
+			itemNode.setTextContent(antPort[i]);
 		}
 	}
 
@@ -857,18 +828,9 @@ public class XmlCreator {
 	}
 
 	private void editUnit() {
-		NodeList unitNodeList = (NodeList) getNodeSetObjectFromXmlDocument("//cmData/managedObject[@class=\"UNIT\"]");
-		Node unitNode = unitNodeList.item(0);
-		NodeList pNodeList = unitNode.getChildNodes();
-		for (int i = 0; i < pNodeList.getLength(); i++) {
-			Node pNode = pNodeList.item(i);
-			if (pNode.getNodeName().equals("p")) {
-				String pNameValue = getAttributeValueFromNode(pNode, "name");
-				if (pNameValue.equals("unitTypeExpected")) {
-					pNode.setTextContent("472311A");
-				}
-			}
-		}
+		Node pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"UNIT\"]/p[@name=\"unitTypeExpected\"]");
+		pNode.setTextContent("472311A");
 	}
 
 	public void editNumberOfAntenna(int numberOfRfModules) {
@@ -901,10 +863,9 @@ public class XmlCreator {
 		}
 		if (isBgArea) {
 			String eNodeBId = lteSite.generalInfo.get("eNodeBId");
-			NodeList pNodeList = (NodeList) getNodeSetObjectFromXmlDocument(
+			Node pNode = (Node) getNodeObjectFromXmlDocument(
 					"//cmData/managedObject[@class=\"IPNO\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
 							+ "/FTM-1/IPNO-1\"]/list[@name=\"twampFlag\"]/item/p[@name=\"twampIpAddress\"]");
-			Node pNode = pNodeList.item(0);
 			pNode.setTextContent(lteSite.transmission.get("cuDestIp"));
 		}
 	}
