@@ -22,7 +22,7 @@ public class AllLteSitesTest {
 		LteSite lteSite1 = allLteSites.listOfAllSites.get(1);
 		LteSite lteSite2 = allLteSites.listOfAllSites.get(2);
 
-		assertEquals(3, allLteSites.listOfAllSites.size());
+		assertEquals(6, allLteSites.listOfAllSites.size());
 		assertEquals(3, allLteSites.listOfAllSites.get(0).lteCells.size());
 		assertEquals(24, allLteSites.listOfAllSites.get(0).lteCells.get("1").gsmNeighbours.size());
 		assertEquals("BG0337_02/6",

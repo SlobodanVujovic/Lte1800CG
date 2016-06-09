@@ -18,6 +18,7 @@ public class AllConfigFiles {
 			String siteCode = lteSite.generalInfo.get("LocationId");
 			String eNodeBId = lteSite.generalInfo.get("eNodeBId");
 			String siteName = lteSite.generalInfo.get("eNodeBName");
+			xmlCreator.setTemplateFile(siteCode);
 			xmlCreator.copyTemplateXmlFile(siteCode);
 			xmlCreator.createXmlDocument();
 			xmlCreator.editXmlDateAndTime();

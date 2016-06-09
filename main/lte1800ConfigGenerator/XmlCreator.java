@@ -27,14 +27,23 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.NodeIterator;
 
-//TODO 2 template file-a, za 2 oblasti i 1 proenljiva koja ce da drzi onaj file koji obradjujemo i koji zavisi od koda
 //TODO koristi  execute around pattern za sredjivanje metoda (Java 8 in action, 3.3, 66. str.).
 public class XmlCreator {
-	String templateFilePath = "C:\\CG output\\Commissioning_KKLLL_YYYYMMDD.xml", outputFilePath;
-	File templateFile = new File(templateFilePath), outputFile, ftifFile = new File("C:\\CG output\\FTIF_Config.xml");
+	String bgTemplateFilePath = "C:\\CG output\\Commissioning_BGLLL_YYYYMMDD.xml",
+			nonBgTemplateFilePath = "C:\\CG output\\Commissioning_NONBG_YYYYMMDD.xml", templateFilePath, outputFilePath;
+	File templateFile, outputFile, ftifFile = new File("C:\\CG output\\FTIF_Config.xml");
 	DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
 	DateTimeFormatter dateAndTimeFormat = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 	Document xmlDocument;
+
+	public void setTemplateFile(String siteCode) {
+		if (siteCode.contains("BG")) {
+			templateFilePath = bgTemplateFilePath;
+		} else {
+			templateFilePath = nonBgTemplateFilePath;
+		}
+		templateFile = new File(templateFilePath);
+	}
 
 	public void copyTemplateXmlFile(String siteCode) {
 		createOutputFilePath(siteCode);
@@ -46,9 +55,10 @@ public class XmlCreator {
 		}
 	}
 
-	public void createOutputFilePath(String siteCode) {
+	void createOutputFilePath(String siteCode) {
 		String date = LocalDate.now().format(dateFormat);
-		outputFilePath = templateFilePath.replace("KKLLL", siteCode);
+		String templateType = templateFilePath.substring(27, 32);
+		outputFilePath = templateFilePath.replace(templateType, siteCode);
 		outputFilePath = outputFilePath.replace("YYYYMMDD", date);
 	}
 
@@ -270,6 +280,12 @@ public class XmlCreator {
 	}
 
 	public void editLnadjg_cellParameters(GsmNeighbour gsmNeighbour, String eNodeBId, String counter) {
+		Element managedObject = createLnadjgNode(gsmNeighbour, eNodeBId, counter);
+		Node firstManagedObject = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"LNCEL\"]");
+		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+	}
+
+	private Element createLnadjgNode(GsmNeighbour gsmNeighbour, String eNodeBId, String counter) {
 		Element managedObject = xmlDocument.createElement("managedObject");
 		managedObject.setAttribute("class", "LNADJG");
 		String distName = "MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId + "/LNADJG-" + counter;
@@ -328,8 +344,7 @@ public class XmlCreator {
 		managedObject.appendChild(p11);
 		managedObject.appendChild(p12);
 		managedObject.appendChild(p13);
-		Node firstManagedObject = (Node) getNodeObjectFromXmlDocument("//cmData/managedObject[@class=\"LNCEL\"]");
-		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+		return managedObject;
 	}
 
 	public void editLncel_cellParameters(LteCell lteCell, String eNodeBId) {
@@ -396,6 +411,21 @@ public class XmlCreator {
 
 	public void editLnrelg_CellIdUniquePerCell(String eNodeBId, String lnCellId, String counter,
 			GsmNeighbour gsmNeighbour) {
+		Element managedObject = createLnrelgNode(eNodeBId, lnCellId, counter, gsmNeighbour);
+		NodeList managedObjectList = (NodeList) getNodeSetObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"REDRT\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
+						+ "/LNCEL-" + lnCellId + "/REDRT-0\"]");
+		Node firstManagedObject = null;
+		for (int i = 0; i < managedObjectList.getLength(); i++) {
+			firstManagedObject = managedObjectList.item(i);
+			if (firstManagedObject.getNodeName().equals("managedObject")) {
+				break;
+			}
+		}
+		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+	}
+
+	private Element createLnrelgNode(String eNodeBId, String lnCellId, String counter, GsmNeighbour gsmNeighbour) {
 		Element managedObject = xmlDocument.createElement("managedObject");
 		managedObject.setAttribute("class", "LNRELG");
 		String distName = "MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId + "/LNCEL-" + lnCellId + "/LNRELG-" + counter;
@@ -443,17 +473,7 @@ public class XmlCreator {
 		managedObject.appendChild(p5);
 		managedObject.appendChild(p6);
 		managedObject.appendChild(list);
-		NodeList managedObjectList = (NodeList) getNodeSetObjectFromXmlDocument(
-				"//cmData/managedObject[@class=\"REDRT\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
-						+ "/LNCEL-" + lnCellId + "/REDRT-0\"]");
-		Node firstManagedObject = null;
-		for (int i = 0; i < managedObjectList.getLength(); i++) {
-			firstManagedObject = managedObjectList.item(i);
-			if (firstManagedObject.getNodeName().equals("managedObject")) {
-				break;
-			}
-		}
-		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+		return managedObject;
 	}
 
 	public void editRedrt_BcchUnique(String eNodeBId, String lnCellId, Set<String> uniqueBcchOfNeighbours) {
@@ -469,6 +489,14 @@ public class XmlCreator {
 	}
 
 	public void editRmod_SiteName(String eNodeBId, String counter, String siteName, boolean isSharing) {
+		Element managedObject = createRmodNode(eNodeBId, counter, siteName, isSharing);
+		NodeList managedObjectList = (NodeList) getNodeSetObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"SMOD\" and @distName=\"MRBTS-" + eNodeBId + "/SMOD-1\"]");
+		Node firstManagedObject = managedObjectList.item(0);
+		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+	}
+
+	private Element createRmodNode(String eNodeBId, String counter, String siteName, boolean isSharing) {
 		Element managedObject = xmlDocument.createElement("managedObject");
 		managedObject.setAttribute("class", "RMOD");
 		String distName = "MRBTS-" + eNodeBId + "/RMOD-" + counter;
@@ -527,10 +555,7 @@ public class XmlCreator {
 		managedObject.appendChild(p3);
 		managedObject.appendChild(p4);
 		managedObject.appendChild(list);
-		NodeList managedObjectList = (NodeList) getNodeSetObjectFromXmlDocument(
-				"//cmData/managedObject[@class=\"SMOD\" and @distName=\"MRBTS-" + eNodeBId + "/SMOD-1\"]");
-		Node firstManagedObject = managedObjectList.item(0);
-		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+		return managedObject;
 	}
 
 	public void editLteSmod_SiteName(String eNodeBId, String siteName) {
@@ -540,6 +565,14 @@ public class XmlCreator {
 	}
 
 	public void editGsmSmod_SiteName(String eNodeBId) {
+		Element managedObject = createGsmSmodeNode(eNodeBId);
+		NodeList managedObjectList = (NodeList) getNodeSetObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"TRBLCADM\" and @distName=\"MRBTS-" + eNodeBId + "/TRBLCADM-1\"]");
+		Node firstManagedObject = managedObjectList.item(0);
+		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+	}
+
+	private Element createGsmSmodeNode(String eNodeBId) {
 		Element managedObject = xmlDocument.createElement("managedObject");
 		managedObject.setAttribute("class", "SMOD");
 		String distName = "MRBTS-" + eNodeBId + "/SMOD-2";
@@ -599,10 +632,7 @@ public class XmlCreator {
 		managedObject.appendChild(p1);
 		managedObject.appendChild(p2);
 		managedObject.appendChild(list);
-		NodeList managedObjectList = (NodeList) getNodeSetObjectFromXmlDocument(
-				"//cmData/managedObject[@class=\"TRBLCADM\" and @distName=\"MRBTS-" + eNodeBId + "/TRBLCADM-1\"]");
-		Node firstManagedObject = managedObjectList.item(0);
-		firstManagedObject.getParentNode().insertBefore(managedObject, firstManagedObject);
+		return managedObject;
 	}
 
 	public void editFtm_SiteCode(String eNodeBId, String siteCode, String siteName) {

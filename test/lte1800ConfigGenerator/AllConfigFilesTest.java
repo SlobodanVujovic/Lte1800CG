@@ -841,14 +841,16 @@ public class AllConfigFilesTest {
 	public void testEditIpno_Twamp() {
 		for (File configFile : allConfigFiles.listOfAllConfigFiles) {
 			lteSite = allConfigFiles.listOfAllSites.get(numberOfSite++);
-			xmlDocument = createXmlDocument(configFile);
-			NodeList itemNodeList = (NodeList) getObjectFromXmlDocument(
-					"//cmData/managedObject[@class=\"IPNO\"]/list[@name=\"twampFlag\"]/item/p[@name=\"twampIpAddress\"]");
-			Node itemNode = itemNodeList.item(0);
-			String itemValue = itemNode.getTextContent();
-			String expected = lteSite.transmission.get("cuDestIp");
+			if (lteSite.generalInfo.get("LocationId").contains("BG")) {
+				xmlDocument = createXmlDocument(configFile);
+				NodeList itemNodeList = (NodeList) getObjectFromXmlDocument(
+						"//cmData/managedObject[@class=\"IPNO\"]/list[@name=\"twampFlag\"]/item/p[@name=\"twampIpAddress\"]");
+				Node itemNode = itemNodeList.item(0);
+				String itemValue = itemNode.getTextContent();
+				String expected = lteSite.transmission.get("cuDestIp");
 
-			assertEquals(expected, itemValue);
+				assertEquals(expected, itemValue);
+			}
 		}
 	}
 
@@ -856,7 +858,8 @@ public class AllConfigFilesTest {
 	public void clean() {
 		File outputDir = new File("C:\\CG output");
 		for (File file : outputDir.listFiles()) {
-			if (!file.getPath().equals("C:\\CG output\\Commissioning_KKLLL_YYYYMMDD.xml")
+			if (!file.getPath().equals("C:\\CG output\\Commissioning_BGLLL_YYYYMMDD.xml")
+					& !file.getPath().equals("C:\\CG output\\Commissioning_NONBG_YYYYMMDD.xml")
 					& !file.getPath().equals("C:\\CG output\\FTIF_Config.xml")) {
 				file.delete();
 			}

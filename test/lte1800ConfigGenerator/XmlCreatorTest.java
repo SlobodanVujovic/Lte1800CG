@@ -17,11 +17,26 @@ public class XmlCreatorTest {
 	}
 
 	@Test
+	public void testSetTemplateFilePath() {
+		xmlCreator.setTemplateFile("BG0001");
+		File templateFile = xmlCreator.templateFile;
+
+		assertTrue(templateFile.toString().contains("BGLLL"));
+
+		xmlCreator.setTemplateFile("KG0001");
+		templateFile = xmlCreator.templateFile;
+
+		assertTrue(templateFile.toString().contains("NONBG"));
+	}
+
+	@Test
 	public void testCreateOutputFilePath() {
 		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
 		String expectedPath = "C:\\CG output\\Commissioning_BG0001_" + LocalDate.now().format(dateFormat) + ".xml";
 
-		xmlCreator.createOutputFilePath("BG0001");
+		String siteCode = "BG0001";
+		xmlCreator.setTemplateFile(siteCode);
+		xmlCreator.createOutputFilePath(siteCode);
 		String filePath = xmlCreator.outputFilePath;
 
 		assertEquals(expectedPath, filePath);
@@ -29,7 +44,9 @@ public class XmlCreatorTest {
 
 	@Test
 	public void testCopyTemplateXmlFile() {
-		xmlCreator.copyTemplateXmlFile("BG0001");
+		String siteCode = "BG0001";
+		xmlCreator.setTemplateFile(siteCode);
+		xmlCreator.copyTemplateXmlFile(siteCode);
 		File outputFile = xmlCreator.outputFile;
 
 		if (!outputFile.exists()) {
@@ -39,4 +56,5 @@ public class XmlCreatorTest {
 			fail();
 		}
 	}
+
 }

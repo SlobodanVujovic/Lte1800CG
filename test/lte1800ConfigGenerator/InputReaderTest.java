@@ -181,7 +181,7 @@ public class InputReaderTest {
 
 		allLteSites.inputReader.readRadioFileForCellInfo(listOfAllSites);
 
-		assertEquals(3, listOfAllSites.size());
+		assertEquals(6, listOfAllSites.size());
 		assertEquals(3, listOfAllSites.get(0).lteCells.size());
 
 		String siteCode = listOfAllSites.get(0).generalInfo.get("LocationId");
@@ -263,7 +263,7 @@ public class InputReaderTest {
 
 		allLteSites.inputReader.readRadioFileForNeighbours(listOfAllSites);
 
-		assertEquals(3, listOfAllSites.size());
+		assertEquals(6, listOfAllSites.size());
 		assertEquals(3, listOfAllSites.get(0).lteCells.size());
 		assertEquals(24, listOfAllSites.get(0).lteCells.get("1").gsmNeighbours.size());
 		assertEquals("BG0012_04/3", listOfAllSites.get(0).lteCells.get("1").gsmNeighbours.get("123").cellName);
