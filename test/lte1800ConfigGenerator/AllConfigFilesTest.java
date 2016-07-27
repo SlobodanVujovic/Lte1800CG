@@ -6,6 +6,8 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -117,21 +119,36 @@ public class AllConfigFilesTest {
 			lteSite = allConfigFiles.listOfAllSites.get(numberOfSite++);
 			xmlDocument = createXmlDocument(configFile);
 			NodeList managedObjectList = xmlDocument.getElementsByTagName("managedObject");
+			// Set Cell ID value according to type of site.
+			String siteType = lteSite.hardware.get("siteType");
 			int cellId = 1;
+			if (siteType.equals("L800")) {
+				cellId = 11;
+			}
+			// Get all LN Cell IDs in array.
+			int numberOfCells = lteSite.lteCells.size();
+			List<String> lnCellIds = new ArrayList<>();
+			for (int j = 0; j < numberOfCells; j++) {
+				LteCell lteCell = lteSite.lteCells.get(String.valueOf(cellId++));
+				String lncellId = lteCell.cellInfo.get("lnCellId");
+				lnCellIds.add(lncellId);
+			}
 			for (int i = 0; i < managedObjectList.getLength(); i++) {
 				Node managedObjectNode = managedObjectList.item(i);
 				String distNameValue = getAttributeValueFromNode(managedObjectNode, "distName");
 				if (distNameValue.contains("LNCEL")) {
-					LteCell lteCell = lteSite.lteCells.get(String.valueOf(cellId));
-					String lncellId = lteCell.cellInfo.get("lnCellId");
-
-					assertThat(distNameValue.indexOf("LNCEL-" + lncellId), is(not(-1)));
-
-					Node nextManagedObjectNode = managedObjectList.item(i + 1);
-					String classNameValue = getAttributeValueFromNode(nextManagedObjectNode, "class");
-					if (classNameValue.equals("LNCEL")) {
-						++cellId;
+					boolean result = false;
+					// Iterate through all LN Cell IDs and check if any of them
+					// is in distNameValue. If yes then break.
+					for (int j = 0; j < lnCellIds.size(); j++) {
+						result = distNameValue.contains("LNCEL-" + lnCellIds.get(j));
+						if (result) {
+							break;
+						}
 					}
+
+					// Assert that we find match.
+					assertTrue(result);
 				}
 			}
 		}
@@ -329,8 +346,9 @@ public class AllConfigFilesTest {
 	}
 
 	/*
-	 * To get the number of child elements within a particular element, you need to take account of the fact that not all nodes are elements. So we
-	 * can use:
+	 * To get the number of child elements within a particular element, you need
+	 * to take account of the fact that not all nodes are elements. So we can
+	 * use:
 	 */
 	private int getChildElementCount(Element element) {
 		int count = 0;
@@ -486,6 +504,38 @@ public class AllConfigFilesTest {
 							assertEquals(expected, numberOfItemsInRmodObject);
 						}
 					}
+				}
+			}
+		}
+	}
+
+	// @Ignore
+	@Test
+	public void testSetL800RfModulesType() {
+		for (File configFile : allConfigFiles.listOfAllConfigFiles) {
+			lteSite = allConfigFiles.listOfAllSites.get(numberOfSite++);
+			if (lteSite.hardware.get("siteType").equals("L800")) {
+				xmlDocument = createXmlDocument(configFile);
+				NodeList rmodNodeList = (NodeList) getObjectFromXmlDocument(
+						"//cmData/managedObject[@class=\"RMOD\"]/p[@name=\"prodCodePlanned\"]");
+				for (int i = 0; i < rmodNodeList.getLength(); i++) {
+					Node rfModuleProductCode = rmodNodeList.item(i);
+					// Because i starts with 0 and "rfModule1" in LteSite's
+					// "hardware"
+					// map starts with 1 we add 1 to i.
+					String rfModuleKey = "rfModule" + (i + 1);
+					String rfModuleType = lteSite.hardware.get(rfModuleKey);
+					// Default RF module is FRMF = "472930A".
+					String rfModuleProdCode = "472930A";
+					switch (rfModuleType) {
+					case "FRMB":
+						rfModuleProdCode = "472291A";
+						break;
+					case "FRMC":
+						rfModuleProdCode = "472655A.101";
+						break;
+					}
+					assertEquals(rfModuleProdCode, rfModuleProductCode.getTextContent());
 				}
 			}
 		}
@@ -765,6 +815,13 @@ public class AllConfigFilesTest {
 				antPort[3] = "9";
 				antPort[4] = "5";
 				antPort[5] = "11";
+			} else if (lteSite.hardware.get("cell1Ports").equals("1-2")) {
+				antPort[0] = "1";
+				antPort[1] = "2";
+				antPort[2] = "3";
+				antPort[3] = "4";
+				antPort[4] = "5";
+				antPort[5] = "6";
 			}
 			NodeList itemNodeList = (NodeList) getObjectFromXmlDocument(
 					"//cmData/managedObject[@class=\"LCELL\"]/list/item");
@@ -841,7 +898,8 @@ public class AllConfigFilesTest {
 	public void testEditIpno_Twamp() {
 		for (File configFile : allConfigFiles.listOfAllConfigFiles) {
 			lteSite = allConfigFiles.listOfAllSites.get(numberOfSite++);
-			if (lteSite.generalInfo.get("LocationId").contains("BG")) {
+			String siteType = lteSite.hardware.get("siteType");
+			if (lteSite.generalInfo.get("LocationId").contains("BG") && siteType.equals("L1800")) {
 				xmlDocument = createXmlDocument(configFile);
 				NodeList itemNodeList = (NodeList) getObjectFromXmlDocument(
 						"//cmData/managedObject[@class=\"IPNO\"]/list[@name=\"twampFlag\"]/item/p[@name=\"twampIpAddress\"]");
@@ -854,12 +912,70 @@ public class AllConfigFilesTest {
 		}
 	}
 
+	// @Ignore
+	@Test
+	public void testEditFtifPortsStatus() {
+		for (File configFile : allConfigFiles.listOfAllConfigFiles) {
+			lteSite = allConfigFiles.listOfAllSites.get(numberOfSite++);
+			xmlDocument = createXmlDocument(configFile);
+			String gsmPort = lteSite.hardware.get("gsmPort");
+			if (isPortValid(gsmPort)) {
+				char gsmPortId = gsmPort.charAt(3);
+				// Pay attention how is used "contains()" when attribute is
+				// changeable. Look where is apostrophe and where is quotations.
+				// Use apostrophe when it is part of the bigger string.
+				NodeList pNodeList = (NodeList) getObjectFromXmlDocument(
+						"//cmData/managedObject[@class=\"ETHLK\" and contains(@distName, 'ETHLK-1-" + gsmPortId
+								+ "')]/p[@name=\"administrativeState\"]");
+				Node pNode = pNodeList.item(0);
+				String pValue = pNode.getTextContent();
+
+				assertEquals("unlocked", pValue);
+			}
+			String umstPort = lteSite.hardware.get("umtsPort");
+			if (isPortValid(umstPort)) {
+				char umtsPortId = umstPort.charAt(3);
+				NodeList pNodeList = (NodeList) getObjectFromXmlDocument(
+						"//cmData/managedObject[@class=\"ETHLK\" and contains(@distName, 'ETHLK-1-" + umtsPortId
+								+ "')]/p[@name=\"administrativeState\"]");
+				Node pNode = pNodeList.item(0);
+				String pValue = pNode.getTextContent();
+
+				assertEquals("unlocked", pValue);
+			}
+		}
+	}
+
+	private boolean isPortValid(String port) {
+		return !(port.equals("dummyData") || port.equals(""));
+	}
+
+	// @Ignore
+	@Test
+	public void testEditQosOnFtifPorts() {
+		for (File configFile : allConfigFiles.listOfAllConfigFiles) {
+			lteSite = allConfigFiles.listOfAllSites.get(numberOfSite++);
+			xmlDocument = createXmlDocument(configFile);
+			String gsmPort = lteSite.hardware.get("gsmPort");
+			String umtsPort = lteSite.hardware.get("umtsPort");
+			if (isPortValid(gsmPort) | isPortValid(umtsPort)) {
+				NodeList pNodeList = (NodeList) getObjectFromXmlDocument(
+						"//cmData/managedObject[@class=\"L2SWI\"]/p[@name=\"enableLayer2Switching\"]");
+				Node pNode = pNodeList.item(0);
+				String pValue = pNode.getTextContent();
+
+				assertEquals("true", pValue);
+			}
+		}
+	}
+
 	@After
 	public void clean() {
 		File outputDir = new File("C:\\CG output");
 		for (File file : outputDir.listFiles()) {
 			if (!file.getPath().equals("C:\\CG output\\Commissioning_BGLLL_YYYYMMDD.xml")
 					& !file.getPath().equals("C:\\CG output\\Commissioning_NONBG_YYYYMMDD.xml")
+					& !file.getPath().equals("C:\\CG output\\Commissioning_LT800_YYYYMMDD.xml")
 					& !file.getPath().equals("C:\\CG output\\FTIF_Config.xml")) {
 				file.delete();
 			}

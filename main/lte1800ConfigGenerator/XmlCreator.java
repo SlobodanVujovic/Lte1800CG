@@ -25,23 +25,48 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.traversal.NodeIterator;
 
 //TODO koristi  execute around pattern za sredjivanje metoda (Java 8 in action, 3.3, 66. str.).
 public class XmlCreator {
 	String bgTemplateFilePath = "C:\\CG output\\Commissioning_BGLLL_YYYYMMDD.xml",
-			nonBgTemplateFilePath = "C:\\CG output\\Commissioning_NONBG_YYYYMMDD.xml", templateFilePath, outputFilePath;
+			nonBgTemplateFilePath = "C:\\CG output\\Commissioning_NONBG_YYYYMMDD.xml",
+
+			// ================================================================================
+			// LTE800
+
+			l800TemplateFilePath = "C:\\CG output\\Commissioning_LT800_YYYYMMDD.xml",
+
+			// ================================================================================
+
+			templateFilePath, outputFilePath;
 	File templateFile, outputFile, ftifFile = new File("C:\\CG output\\FTIF_Config.xml");
 	DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
 	DateTimeFormatter dateAndTimeFormat = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 	Document xmlDocument;
 
-	public void setTemplateFile(String siteCode) {
-		if (siteCode.contains("BG")) {
-			templateFilePath = bgTemplateFilePath;
+	public void setTemplateFile(String siteType, String siteCode) {
+
+		// ================================================================================
+		// LTE800
+
+		if (siteType.equals("L1800")) {
+
+			// ================================================================================
+			if (siteCode.contains("BG")) {
+				templateFilePath = bgTemplateFilePath;
+			} else {
+				templateFilePath = nonBgTemplateFilePath;
+			}
+
+			// ================================================================================
+			// LTE800
+
 		} else {
-			templateFilePath = nonBgTemplateFilePath;
+			templateFilePath = l800TemplateFilePath;
 		}
+
+		// ================================================================================
+
 		templateFile = new File(templateFilePath);
 	}
 
@@ -63,7 +88,8 @@ public class XmlCreator {
 	}
 
 	/*
-	 * Create "builderFactory" that we use to create "builder" to parse XML file. Parsing XML we create "Document" object that represent XML file and
+	 * Create "builderFactory" that we use to create "builder" to parse XML
+	 * file. Parsing XML we create "Document" object that represent XML file and
 	 * have methods to manipulate with it.
 	 */
 	public void createXmlDocument() {
@@ -94,7 +120,8 @@ public class XmlCreator {
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		try {
 			Transformer transformer = transformerFactory.newTransformer();
-			// When write new Node to xml file, and want new line after every element, we use set:
+			// When write new Node to xml file, and want new line after every
+			// element, we use set:
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			DOMSource source = new DOMSource(xmlDocument);
 			StreamResult result = new StreamResult(outputFile);
@@ -133,12 +160,17 @@ public class XmlCreator {
 		Object result = null;
 		try {
 			/*
-			 * First we define expression that say what we want to find in document. Double forward slashes ("//") represent root node in xml. Then we
-			 * drill to node we need separating different nodes with forward slash ("/"). When we get to the node we need, if we want node to have
-			 * specific attribute with some value then we put that attribute in square braces ("[ ]") and precede it with "@" sign.
+			 * First we define expression that say what we want to find in
+			 * document. Double forward slashes ("//") represent root node in
+			 * xml. Then we drill to node we need separating different nodes
+			 * with forward slash ("/"). When we get to the node we need, if we
+			 * want node to have specific attribute with some value then we put
+			 * that attribute in square braces ("[ ]") and precede it with "@"
+			 * sign.
 			 */
 			expression = xPath.compile(stringExpression);
-			// Result is evaluation of document with defined expression and as output we can demand NodeSet.
+			// Result is evaluation of document with defined expression and as
+			// output we can demand NodeSet.
 			result = expression.evaluate(xmlDocument, XPathConstants.NODESET);
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
@@ -174,7 +206,8 @@ public class XmlCreator {
 
 	public void editLncellId(LteSite lteSite) {
 		/*
-		 * Pay attention to expression string, with contains(x, y) we search for y inside x. This string say to search all managedObjects that in
+		 * Pay attention to string expression, with contains(x, y) we search for
+		 * y inside x. This string say to search all managedObjects that in
 		 * distName attribute have "LNCEL-" anywhere.
 		 */
 		NodeList lncelNodeList = (NodeList) getNodeSetObjectFromXmlDocument(
@@ -184,59 +217,60 @@ public class XmlCreator {
 			String distNameOldValue = getAttributeValueFromNode(lncelNode, "distName");
 			int startIndex = distNameOldValue.indexOf("LNCEL") + 6;
 			int endIndex = distNameOldValue.indexOf("/", startIndex);
+			char[] cellIdInXml = new char[] { '1', '2', '3', '4' };
+			String[] cellIdInObject = new String[] { "1", "2", "3", "4" };
+
+			// ================================================================================
+			// LTE800
+
+			String siteType = lteSite.hardware.get("siteType");
+			if (siteType.equals("L800")) {
+				cellIdInXml = new char[] { '6', '7', '8', '9' };
+				cellIdInObject = new String[] { "11", "12", "13", "14" };
+			}
+
+			// ================================================================================
+
 			if (endIndex != -1) {
 				String oldCellId = distNameOldValue.substring(startIndex, endIndex);
-				if (oldCellId.charAt(oldCellId.length() - 1) == '1') {
-					LteCell lteCell = lteSite.lteCells.get(String.valueOf("1"));
-					String lncellId = lteCell.cellInfo.get("lnCellId");
-					String distNameNewValue = distNameOldValue.substring(0, startIndex) + lncellId
-							+ distNameOldValue.substring(endIndex);
-					setAttributeValueOfNode(lncelNode, "distName", distNameNewValue);
-				} else if (oldCellId.charAt(oldCellId.length() - 1) == '2') {
-					LteCell lteCell = lteSite.lteCells.get(String.valueOf("2"));
-					String lncellId = lteCell.cellInfo.get("lnCellId");
-					String distNameNewValue = distNameOldValue.substring(0, startIndex) + lncellId
-							+ distNameOldValue.substring(endIndex);
-					setAttributeValueOfNode(lncelNode, "distName", distNameNewValue);
-				} else if (oldCellId.charAt(oldCellId.length() - 1) == '3') {
-					LteCell lteCell = lteSite.lteCells.get(String.valueOf("3"));
-					String lncellId = lteCell.cellInfo.get("lnCellId");
-					String distNameNewValue = distNameOldValue.substring(0, startIndex) + lncellId
-							+ distNameOldValue.substring(endIndex);
-					setAttributeValueOfNode(lncelNode, "distName", distNameNewValue);
-				} else {
-					LteCell lteCell = lteSite.lteCells.get(String.valueOf("4"));
-					String lncellId = lteCell.cellInfo.get("lnCellId");
-					String distNameNewValue = distNameOldValue.substring(0, startIndex) + lncellId
-							+ distNameOldValue.substring(endIndex);
-					setAttributeValueOfNode(lncelNode, "distName", distNameNewValue);
+				for (int j = 0; j < cellIdInXml.length; j++) {
+					if (oldCellId.charAt(oldCellId.length() - 1) == cellIdInXml[j]) {
+						String distNameNewValue = createDistNameNewValue(lteSite, cellIdInObject[j], distNameOldValue,
+								startIndex, endIndex);
+						setAttributeValueOfNode(lncelNode, "distName", distNameNewValue);
+						break;
+					}
 				}
 			} else {
 				String oldCellId = distNameOldValue.substring(startIndex);
-				if (oldCellId.charAt(oldCellId.length() - 1) == '1') {
-					LteCell lteCell = lteSite.lteCells.get(String.valueOf("1"));
-					String lncellId = lteCell.cellInfo.get("lnCellId");
-					String distNameNewValue = distNameOldValue.substring(0, startIndex) + lncellId;
-					setAttributeValueOfNode(lncelNode, "distName", distNameNewValue);
-				} else if (oldCellId.charAt(oldCellId.length() - 1) == '2') {
-					LteCell lteCell = lteSite.lteCells.get(String.valueOf("2"));
-					String lncellId = lteCell.cellInfo.get("lnCellId");
-					String distNameNewValue = distNameOldValue.substring(0, startIndex) + lncellId;
-					setAttributeValueOfNode(lncelNode, "distName", distNameNewValue);
-				} else if (oldCellId.charAt(oldCellId.length() - 1) == '3') {
-					LteCell lteCell = lteSite.lteCells.get(String.valueOf("3"));
-					String lncellId = lteCell.cellInfo.get("lnCellId");
-					String distNameNewValue = distNameOldValue.substring(0, startIndex) + lncellId;
-					setAttributeValueOfNode(lncelNode, "distName", distNameNewValue);
-				} else {
-					LteCell lteCell = lteSite.lteCells.get(String.valueOf("4"));
-					String lncellId = lteCell.cellInfo.get("lnCellId");
-					String distNameNewValue = distNameOldValue.substring(0, startIndex) + lncellId;
-					setAttributeValueOfNode(lncelNode, "distName", distNameNewValue);
+				for (int j = 0; j < cellIdInXml.length; j++) {
+					if (oldCellId.charAt(oldCellId.length() - 1) == cellIdInXml[j]) {
+						String distNameNewValue = createDistNameNewValue(lteSite, cellIdInObject[j], distNameOldValue,
+								startIndex);
+						setAttributeValueOfNode(lncelNode, "distName", distNameNewValue);
+						break;
+					}
 				}
 			}
-
 		}
+	}
+
+	private String createDistNameNewValue(LteSite lteSite, String cellIdInObject, String distNameOldValue,
+			int startIndex, int endIndex) {
+		LteCell lteCell = lteSite.lteCells.get(cellIdInObject);
+		String lncellId = lteCell.cellInfo.get("lnCellId");
+		String distNameNewValue = distNameOldValue.substring(0, startIndex) + lncellId
+				+ distNameOldValue.substring(endIndex);
+		return distNameNewValue;
+	}
+
+	// Overload of previous method - this does't take "endIndex" parameter.
+	private String createDistNameNewValue(LteSite lteSite, String cellIdInObject, String distNameOldValue,
+			int startIndex) {
+		LteCell lteCell = lteSite.lteCells.get(cellIdInObject);
+		String lncellId = lteCell.cellInfo.get("lnCellId");
+		String distNameNewValue = distNameOldValue.substring(0, startIndex) + lncellId;
+		return distNameNewValue;
 	}
 
 	public void editBtsscl_BtsId_BtsName(String eNodeBId, String siteCode, boolean isSharing) {
@@ -267,7 +301,8 @@ public class XmlCreator {
 		Object result = null;
 		try {
 			expression = xPath.compile(stringExpression);
-			// Result is evaluation of document with defined expression and as output we can demand Node.
+			// Result is evaluation of document with defined expression and as
+			// output we can demand Node.
 			result = expression.evaluate(xmlDocument, XPathConstants.NODE);
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
@@ -344,7 +379,8 @@ public class XmlCreator {
 	}
 
 	public void editLncel_cellParameters(LteCell lteCell, String eNodeBId) {
-		// This is case when expression represent search for node with 2 specific attributes.
+		// This is case when expression represent search for node with 2
+		// specific attributes.
 		Node pNode = (Node) getNodeObjectFromXmlDocument(
 				"//cmData/managedObject[@class=\"LNCEL\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
 						+ "/LNCEL-" + lteCell.cellInfo.get("lnCellId") + "\"]/p[@name=\"dlChBw\"]");
@@ -747,6 +783,13 @@ public class XmlCreator {
 			antPort[3] = "9";
 			antPort[4] = "5";
 			antPort[5] = "11";
+		} else if (cellPorts.equals("1-2")) {
+			antPort[0] = "1";
+			antPort[1] = "2";
+			antPort[2] = "3";
+			antPort[3] = "4";
+			antPort[4] = "5";
+			antPort[5] = "6";
 		}
 		NodeList itemList = (NodeList) getNodeSetObjectFromXmlDocument(
 				"//cmData/managedObject[@class=\"LCELL\"]/list/item/p[@name=\"antlId\"]");
@@ -756,29 +799,32 @@ public class XmlCreator {
 		}
 	}
 
-	public void isFtifUsed(boolean ftifIsUsed) {
-		if (ftifIsUsed) {
-			Document ftifDocument = createXmlDocumentFromFile(ftifFile);
-			Node referenceNode = (Node) getNodeObjectFromXmlDocument(
-					"//cmData/managedObject[@class=\"ETHLK\" and contains(@distName,'ETHLK-0-1')]");
-			NodeList managedObjectNodeList = (NodeList) getNodeSetObjectFromSpecifiedDocument(ftifDocument,
-					"//cmData/managedObject");
-			for (int i = 0; i < managedObjectNodeList.getLength(); i++) {
-				Element managedObjectElement = (Element) managedObjectNodeList.item(i);
-				/*
-				 * Create a duplicate node and transfer ownership of the new node into the destination document. Second parameter in importNode()
-				 * method, if set to true mean that we copy all children of the node.
-				 */
-				Node managedObjectCopy = xmlDocument.importNode(managedObjectElement, true);
-				/*
-				 * Make the new node an actual item in the target document. Pay attention how to insert node at specific level of xml. First we find
-				 * some node at level that we want to put into new nodes and then get parent of that reference node and in that parent we add nodes as
-				 * children. This will put all nodes to the bottom of parent node children list so in next method we reorder nodes in same parent node
-				 * to fit as we want.
-				 */
-				Node parentNode = referenceNode.getParentNode();
-				parentNode.appendChild(managedObjectCopy);
-			}
+	public void isFtifUsed() {
+		Document ftifDocument = createXmlDocumentFromFile(ftifFile);
+		Node referenceNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"ETHLK\" and contains(@distName,'ETHLK-0-1')]");
+		NodeList managedObjectNodeList = (NodeList) getNodeSetObjectFromSpecifiedDocument(ftifDocument,
+				"//cmData/managedObject");
+		for (int i = 0; i < managedObjectNodeList.getLength(); i++) {
+			Element managedObjectElement = (Element) managedObjectNodeList.item(i);
+			/*
+			 * Create a duplicate node and transfer ownership of the new node
+			 * into the destination document. Second parameter in importNode()
+			 * method, if set to true mean that we copy all children of the
+			 * node.
+			 */
+			Node managedObjectCopy = xmlDocument.importNode(managedObjectElement, true);
+			/*
+			 * Make the new node an actual item in the target document. Pay
+			 * attention how to insert node at specific level of xml. First we
+			 * find some node at level that we want to put into new nodes and
+			 * then get parent of that reference node and in that parent we add
+			 * nodes as children. This will put all nodes to the bottom of
+			 * parent node children list so in next method we reorder nodes in
+			 * same parent node to fit as we want.
+			 */
+			Node parentNode = referenceNode.getParentNode();
+			parentNode.appendChild(managedObjectCopy);
 			moveFtifNodesToSpecificPosition();
 			editUnit();
 		}
@@ -840,11 +886,16 @@ public class XmlCreator {
 			Node antlNode = antlNodeList.item(i);
 			Node parentNode = antlNode.getParentNode();
 			/*
-			 * When you read an XML document from a file, the whitespaces between tags actually constitute valid DOM nodes, according to the DOM
-			 * specification. Therefore, the XML parser treats each such sequence of whitespaces as DOM nodes (of type "TEXT"). The "indent" before
-			 * the element and the "carriage return" (and following indent) after it are text nodes. If you remove an element and there's a text node
-			 * before or after it, naturally those nodes are not removed. If you want to remove the element, then also remove the text node in front
-			 * of it (provided it consists entirely of whitespace).
+			 * When you read an XML document from a file, the whitespaces
+			 * between tags actually constitute valid DOM nodes, according to
+			 * the DOM specification. Therefore, the XML parser treats each such
+			 * sequence of whitespaces as DOM nodes (of type "TEXT"). The
+			 * "indent" before the element and the "carriage return" (and
+			 * following indent) after it are text nodes. If you remove an
+			 * element and there's a text node before or after it, naturally
+			 * those nodes are not removed. If you want to remove the element,
+			 * then also remove the text node in front of it (provided it
+			 * consists entirely of whitespace).
 			 */
 			Node prevNode = antlNode.getPreviousSibling();
 			if (prevNode != null && prevNode.getNodeType() == Node.TEXT_NODE
@@ -861,7 +912,14 @@ public class XmlCreator {
 		if (siteName.contains("BG")) {
 			isBgArea = true;
 		}
-		if (isBgArea) {
+
+		// ================================================================================
+		// LTE800
+
+		String siteType = lteSite.hardware.get("siteType");
+		if (isBgArea && siteType.equals("L1800")) {
+
+			// ================================================================================
 			String eNodeBId = lteSite.generalInfo.get("eNodeBId");
 			Node pNode = (Node) getNodeObjectFromXmlDocument(
 					"//cmData/managedObject[@class=\"IPNO\" and @distName=\"MRBTS-" + eNodeBId + "/LNBTS-" + eNodeBId
@@ -870,7 +928,56 @@ public class XmlCreator {
 		}
 	}
 
-	// TODO Ovaj metod je za brisanje LCELL node-ova kada se koristi template sa 4 sektora. Nije integrisan i testiran.
+	public void editFtifPortsStatus(String[] ports) {
+		for (String port : ports) {
+			if (!(port.equals("dummyData") || port.equals(""))) {
+				char portId = port.charAt(3);
+				Node pNode = (Node) getNodeObjectFromXmlDocument(
+						"//cmData/managedObject[@class=\"ETHLK\" and contains(@distName, 'ETHLK-1-" + portId
+								+ "')]/p[@name=\"administrativeState\"]");
+				pNode.setTextContent("unlocked");
+			}
+		}
+	}
+
+	public void editQosOnFtifPorts() {
+		Node pNode = (Node) getNodeObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"L2SWI\"]/p[@name=\"enableLayer2Switching\"]");
+		pNode.setTextContent("true");
+	}
+
+	// ================================================================================
+	// LTE800
+
+	public void setL800RfModulesType(LteSite lteSite) {
+		String numberOfRfModules = lteSite.hardware.get("numberOfRfModules");
+		int rfModulesNumber = Integer.valueOf(numberOfRfModules);
+		NodeList rmodNodeList = (NodeList) getNodeSetObjectFromXmlDocument(
+				"//cmData/managedObject[@class=\"RMOD\"]/p[@name=\"prodCodePlanned\"]");
+		for (int i = 0; i < rfModulesNumber; i++) {
+			// Because i starts with 0 and "rfModule1" in LteSite's "hardware"
+			// map starts with 1 we add 1 to i.
+			String rfModuleKey = "rfModule" + (i + 1);
+			String rfModuleType = lteSite.hardware.get(rfModuleKey);
+			// Default RF module is FRMF = "472930A".
+			String rfModuleProdCode = "472930A";
+			switch (rfModuleType) {
+			case "FRMB":
+				rfModuleProdCode = "472291A";
+				break;
+			case "FRMC":
+				rfModuleProdCode = "472655A.101";
+				break;
+			}
+			Node rfModuleProductCodeNode = rmodNodeList.item(i);
+			rfModuleProductCodeNode.setTextContent(rfModuleProdCode);
+		}
+	}
+
+	// ================================================================================
+
+	// TODO Ovaj metod je za brisanje LCELL node-ova kada se koristi template sa
+	// 4 sektora. Nije integrisan i testiran.
 	public void editNumberOfLcellNodes(LteSite lteSite) {
 		int cellNumber = lteSite.lteCells.size();
 		NodeList lcelllNodeList = (NodeList) getNodeSetObjectFromXmlDocument(
@@ -887,7 +994,8 @@ public class XmlCreator {
 		}
 	}
 
-	// TODO Ovaj metod je za brisanje node-ova koji imaju LNCEL-x u distName atributu u slucaju kada se koristi template sa 4 sektora. Nije integrisan
+	// TODO Ovaj metod je za brisanje node-ova koji imaju LNCEL-x u distName
+	// atributu u slucaju kada se koristi template sa 4 sektora. Nije integrisan
 	// i testiran.
 	public void editNumberOfLncellNodes(LteSite lteSite) {
 		int numberOfCells = lteSite.lteCells.size();
@@ -906,5 +1014,4 @@ public class XmlCreator {
 			parentNode.removeChild(lncellNode);
 		}
 	}
-
 }

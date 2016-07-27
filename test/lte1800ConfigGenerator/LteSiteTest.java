@@ -36,9 +36,11 @@ public class LteSiteTest {
 		LteSite lteSite0 = listOfAllSites.get(0);
 		LteSite lteSite1 = listOfAllSites.get(1);
 		LteSite lteSite2 = listOfAllSites.get(2);
-
+		LteSite lteSite3 = listOfAllSites.get(5);
+		
 		assertEquals(30, lteSite0.uniqueBcchOfNeighbours.size());
 		assertEquals(22, lteSite1.uniqueBcchOfNeighbours.size());
 		assertEquals(26, lteSite2.uniqueBcchOfNeighbours.size());
+		assertEquals(22, lteSite3.uniqueBcchOfNeighbours.size());
 	}
 }

@@ -9,13 +9,12 @@ public class AllLteSites {
 
 	public void createListOfAllSites() {
 		inputReader.readTransmissionFile(listOfAllSites);
+		inputReader.readConfigFile(listOfAllSites);
 		inputReader.readRadioFileForCellInfo(listOfAllSites);
 		inputReader.readRadioFileForNeighbours(listOfAllSites);
 		for (LteSite lteSite : listOfAllSites) {
 			lteSite.createUniqueGsmNeighbours();
 			lteSite.createUniqueBcchOfNeighbours();
-			lteSite.createHardwareMap();
 		}
-		inputReader.readConfigFile(listOfAllSites);
 	}
 }

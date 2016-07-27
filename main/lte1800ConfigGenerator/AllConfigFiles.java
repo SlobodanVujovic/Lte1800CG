@@ -18,16 +18,20 @@ public class AllConfigFiles {
 			String siteCode = lteSite.generalInfo.get("LocationId");
 			String eNodeBId = lteSite.generalInfo.get("eNodeBId");
 			String siteName = lteSite.generalInfo.get("eNodeBName");
-			xmlCreator.setTemplateFile(siteCode);
+			String siteType = lteSite.hardware.get("siteType");
+			xmlCreator.setTemplateFile(siteType, siteCode);
 			xmlCreator.copyTemplateXmlFile(siteCode);
 			xmlCreator.createXmlDocument();
 			xmlCreator.editXmlDateAndTime();
-			boolean ftifIsUsed = false;
 			String ftifIsUsedStr = lteSite.hardware.get("ftif");
 			if (ftifIsUsedStr.equals("DA")) {
-				ftifIsUsed = true;
+				xmlCreator.isFtifUsed();
+				String gsmPort = lteSite.hardware.get("gsmPort");
+				String umtsPort = lteSite.hardware.get("umtsPort");
+				String[] ports = { gsmPort, umtsPort };
+				xmlCreator.editFtifPortsStatus(ports);
+				xmlCreator.editQosOnFtifPorts();
 			}
-			xmlCreator.isFtifUsed(ftifIsUsed);
 			xmlCreator.editMrbts_eNodeBId(eNodeBId);
 			xmlCreator.editLnbts_eNodeBId(eNodeBId);
 			xmlCreator.editLncellId(lteSite);
@@ -70,6 +74,16 @@ public class AllConfigFiles {
 				}
 				xmlCreator.editRmod_SiteName(eNodeBId, String.valueOf(counter), siteName, isModuleShared);
 			}
+			
+			// ================================================================================
+			// LTE800
+			
+			if (siteType.equals("L800")) {
+				xmlCreator.setL800RfModulesType(lteSite);
+			}
+			
+			// ================================================================================
+			
 			if (!numberOfSharedRfModules.equals("0") && !numberOfSharedRfModules.equals("")) {
 				xmlCreator.editGsmSmod_SiteName(eNodeBId);
 			}

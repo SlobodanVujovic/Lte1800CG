@@ -39,6 +39,14 @@ public class LteSite {
 
 	public void createHardwareMap() {
 		hardware = new LinkedHashMap<>();
+		
+		// ================================================================================
+		// LTE800
+		
+		hardware.put("siteType", "dummyData");
+		
+		// ================================================================================
+		
 		hardware.put("numberOfRfModules", "dummyData");
 		hardware.put("numberOfSharedRfModules", "dummyData");
 		hardware.put("cell1Ports", "dummyData");
@@ -52,6 +60,17 @@ public class LteSite {
 		hardware.put("ftif", "dummyData");
 		hardware.put("gsmPort", "dummyData");
 		hardware.put("umtsPort", "dummyData");
+		
+		// ================================================================================
+		// LTE800
+				
+		hardware.put("rfModule1", "dummyData");
+		hardware.put("rfModule2", "dummyData");
+		hardware.put("rfModule3", "dummyData");
+		hardware.put("rfModule4", "dummyData");
+		
+		// ================================================================================
+		
 	}
 
 	public void createUniqueGsmNeighbours() {

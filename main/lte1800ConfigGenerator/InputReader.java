@@ -82,6 +82,7 @@ public class InputReader {
 		LteSite tempLteSite = new LteSite();
 		tempLteSite.createInitialGeneralInfoMap();
 		tempLteSite.createInitialTransmissionMap();
+		tempLteSite.createHardwareMap();
 		return tempLteSite;
 	}
 
@@ -146,8 +147,19 @@ public class InputReader {
 				String valueOfCell = dataFormatter.formatCellValue(readedCell);
 				for (int j = 0; j < listOfSites.size(); j++) {
 					LteSite tempLteSite = listOfSites.get(j);
+					
+					// ================================================================================
+					// LTE800
+					
+					int localCellId = 1;
+					if (tempLteSite.hardware.get("siteType").equals("L800")) {
+						localCellId = 11;
+					}
+					
+					// ================================================================================
+					
 					for (int k = 0; k < tempLteSite.lteCells.size(); k++) {
-						LteCell tempLteCell = tempLteSite.lteCells.get(String.valueOf(k + 1));
+						LteCell tempLteCell = tempLteSite.lteCells.get(String.valueOf(localCellId + k));
 						if (tempLteCell != null) {
 							String lnCellId = tempLteCell.cellInfo.get("lnCellId");
 							if (valueOfCell.equals(lnCellId)) {

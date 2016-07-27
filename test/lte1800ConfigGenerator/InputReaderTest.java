@@ -291,7 +291,7 @@ public class InputReaderTest {
 		assertEquals("", lteSite0.hardware.get("rf4IsShared"));
 		assertEquals("DA", lteSite0.hardware.get("ftif"));
 		assertEquals("EIF3", lteSite0.hardware.get("gsmPort"));
-		assertEquals("", lteSite0.hardware.get("umtsPort"));
+		assertEquals("EIF4", lteSite0.hardware.get("umtsPort"));
 		assertEquals("2", lteSite1.hardware.get("numberOfRfModules"));
 		assertEquals("0", lteSite1.hardware.get("numberOfSharedRfModules"));
 		assertEquals("1-1", lteSite1.hardware.get("cell1Ports"));
