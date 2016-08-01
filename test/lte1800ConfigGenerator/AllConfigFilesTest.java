@@ -335,8 +335,8 @@ public class AllConfigFilesTest {
 					if (childNode.getNodeName().equals("list")) {
 						String nameNodeValue = getAttributeValueFromNode(childNode, "name");
 						if (nameNodeValue.equals("gerArfcnVal")) {
-
-							assertEquals(lteSite.uniqueBcchOfNeighbours.size(),
+							
+							assertEquals(lteCell.uniqueBcchOfNeighboursPerCell.size(),
 									getChildElementCount((Element) childNode));
 						}
 					}
@@ -391,7 +391,7 @@ public class AllConfigFilesTest {
 						String nameNodeValue = getAttributeValueFromNode(childNode, "name");
 						if (nameNodeValue.equals("arfcnValueListGERAN")) {
 
-							assertEquals(lteSite.uniqueBcchOfNeighbours.size(),
+							assertEquals(lteCell.uniqueBcchOfNeighboursPerCell.size(),
 									getChildElementCount((Element) childNode));
 						}
 					}
@@ -457,7 +457,7 @@ public class AllConfigFilesTest {
 						String nameNodeValue = getAttributeValueFromNode(childNode, "name");
 						if (nameNodeValue.equals("redirGeranArfcnValueL")) {
 
-							assertEquals(lteSite.uniqueBcchOfNeighbours.size(),
+							assertEquals(lteCell.uniqueBcchOfNeighboursPerCell.size(),
 									getChildElementCount((Element) childNode));
 						}
 					}

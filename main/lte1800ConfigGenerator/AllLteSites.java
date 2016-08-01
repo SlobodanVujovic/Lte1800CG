@@ -1,6 +1,7 @@
 package lte1800ConfigGenerator;
 
 import java.util.List;
+import java.util.Map;
 import java.util.LinkedList;
 
 public class AllLteSites {
@@ -14,7 +15,11 @@ public class AllLteSites {
 		inputReader.readRadioFileForNeighbours(listOfAllSites);
 		for (LteSite lteSite : listOfAllSites) {
 			lteSite.createUniqueGsmNeighbours();
-			lteSite.createUniqueBcchOfNeighbours();
+			for (Map.Entry<String, LteCell> cellEntry : lteSite.lteCells.entrySet()) {
+				LteCell lteCell = cellEntry.getValue();
+				lteCell.createUniqueGsmNeighboursPerCell();
+				lteCell.createUniqueBcchOfNeighboursPerCell();
+			}
 		}
 	}
 }

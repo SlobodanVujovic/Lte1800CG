@@ -43,10 +43,10 @@ public class AllLteSitesTest {
 		assertEquals(30, lteSite2.uniqueGsmNeighbours.size());
 		assertEquals(24, lteSite3.uniqueGsmNeighbours.size());
 		
-		assertEquals(30, lteSite0.uniqueBcchOfNeighbours.size());
-		assertEquals(22, lteSite1.uniqueBcchOfNeighbours.size());
-		assertEquals(26, lteSite2.uniqueBcchOfNeighbours.size());
-		assertEquals(22, lteSite3.uniqueBcchOfNeighbours.size());
+		assertEquals(23, lteSite0.lteCells.get("1").uniqueBcchOfNeighboursPerCell.size());
+		assertEquals(13, lteSite1.lteCells.get("3").uniqueBcchOfNeighboursPerCell.size());
+		assertEquals(16, lteSite2.lteCells.get("2").uniqueBcchOfNeighboursPerCell.size());
+		assertEquals(15, lteSite3.lteCells.get("12").uniqueBcchOfNeighboursPerCell.size());
 	}
 
 }

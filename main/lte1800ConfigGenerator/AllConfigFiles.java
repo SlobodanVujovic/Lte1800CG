@@ -51,10 +51,11 @@ public class AllConfigFiles {
 				LteCell lteCell = entry.getValue();
 				xmlCreator.editLncel_cellParameters(lteCell, eNodeBId);
 				String lnCellId = lteCell.cellInfo.get("lnCellId");
-				Set<String> uniqueBcchOfNeighbours = lteSite.uniqueBcchOfNeighbours;
-				xmlCreator.editGnfl_BcchUnique(eNodeBId, lnCellId, uniqueBcchOfNeighbours);
-				xmlCreator.editLnhog_BcchUnique(eNodeBId, lnCellId, uniqueBcchOfNeighbours);
-				xmlCreator.editRedrt_BcchUnique(eNodeBId, lnCellId, uniqueBcchOfNeighbours);
+				String localCellId = lteCell.cellInfo.get("localCellId");
+				Set<String> uniqueBcchOfNeighboursPerCell = lteSite.lteCells.get(localCellId).uniqueBcchOfNeighboursPerCell;
+				xmlCreator.editGnfl_BcchUnique(eNodeBId, lnCellId, uniqueBcchOfNeighboursPerCell);
+				xmlCreator.editLnhog_BcchUnique(eNodeBId, lnCellId, uniqueBcchOfNeighboursPerCell);
+				xmlCreator.editRedrt_BcchUnique(eNodeBId, lnCellId, uniqueBcchOfNeighboursPerCell);
 				for (Map.Entry<String, GsmNeighbour> neighbourEntry : lteCell.gsmNeighbours.entrySet()) {
 					GsmNeighbour gsmNeighbour = neighbourEntry.getValue();
 					xmlCreator.editLnrelg_CellIdUniquePerCell(eNodeBId, lnCellId, String.valueOf(counter++),

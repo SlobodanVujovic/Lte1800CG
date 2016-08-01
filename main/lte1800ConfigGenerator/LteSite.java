@@ -1,6 +1,5 @@
 package lte1800ConfigGenerator;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -12,8 +11,7 @@ public class LteSite {
 	Map<String, String> hardware;
 	Map<String, LteCell> lteCells = new LinkedHashMap<>();
 	Set<GsmNeighbour> uniqueGsmNeighbours = new LinkedHashSet<>();
-	Set<String> uniqueBcchOfNeighbours = new LinkedHashSet<>();
-
+	
 	public void createInitialGeneralInfoMap() {
 		generalInfo = new LinkedHashMap<>();
 		generalInfo.put("LocationId", "dummyData");
@@ -83,10 +81,4 @@ public class LteSite {
 		}
 	}
 
-	public void createUniqueBcchOfNeighbours() {
-		for (Iterator<GsmNeighbour> iterator = uniqueGsmNeighbours.iterator(); iterator.hasNext();) {
-			GsmNeighbour gsmNeighbour = iterator.next();
-			uniqueBcchOfNeighbours.add(gsmNeighbour.bcch);
-		}
-	}
 }

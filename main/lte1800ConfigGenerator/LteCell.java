@@ -1,5 +1,6 @@
 package lte1800ConfigGenerator;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Set;
 public class LteCell {
 	Map<String, String> cellInfo;
 	Map<String, GsmNeighbour> gsmNeighbours = new LinkedHashMap<>();
+	Set<GsmNeighbour> uniqueGsmNeighboursPerCell = new LinkedHashSet<>();
 	Set<String> uniqueBcchOfNeighboursPerCell = new LinkedHashSet<>();
 
 	public void createInitialCellInfoMap() {
@@ -21,6 +23,20 @@ public class LteCell {
 		cellInfo.put("maxPower", "dummyData");
 		cellInfo.put("channelBw", "dummyData");
 		cellInfo.put("dlEarfcn", "dummyData");
+	}
+
+	public void createUniqueGsmNeighboursPerCell() {
+		for (Map.Entry<String, GsmNeighbour> neighbourEntry : gsmNeighbours.entrySet()) {
+			GsmNeighbour tempGsmNeighbour = neighbourEntry.getValue();
+			uniqueGsmNeighboursPerCell.add(tempGsmNeighbour);
+		}
+	}
+	
+	public void createUniqueBcchOfNeighboursPerCell() {
+		for (Iterator<GsmNeighbour> iterator = uniqueGsmNeighboursPerCell.iterator(); iterator.hasNext();) {
+			GsmNeighbour gsmNeighbour = iterator.next();
+			uniqueBcchOfNeighboursPerCell.add(gsmNeighbour.bcch);
+		}
 	}
 
 }
