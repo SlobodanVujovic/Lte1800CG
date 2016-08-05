@@ -92,7 +92,9 @@ public class AllConfigFiles {
 			xmlCreator.editFtm_SiteCode(eNodeBId, siteCode, siteName);
 			xmlCreator.editIpno(lteSite);
 			xmlCreator.editIpno_Twamp(lteSite);
-			xmlCreator.editTwamp(lteSite.transmission.get("cuDestIp"));
+			if (siteType.equals("L1800")) {
+				xmlCreator.editTwamp(lteSite.transmission.get("cuDestIp"));
+			}
 			xmlCreator.editIprt(lteSite);
 			xmlCreator.editIvif1(lteSite);
 			xmlCreator.editIvif2(lteSite);
